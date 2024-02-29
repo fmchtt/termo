@@ -150,7 +150,7 @@ func (game *Game) gameLoop() {
 		if len(game.Hints) > 0 {
 			fmt.Printf("A palavra a ser testada tem %d letras, digite 1 para dicas (%d restantes) ou digite a palavra a ser testada: ", len(game.Word), len(game.Hints))
 		} else if game.Chances != -1 {
-			fmt.Printf("A palavra a ser testada tem %d letras,você tem %d chances: ", len(game.Word), game.Chances)
+			fmt.Printf("A palavra a ser testada tem %d letras,você tem %d chances: ", len(game.Word), game.Chances-len(game.Histories))
 		} else {
 			fmt.Printf("A palavra a ser testada tem %d letras: ", len(game.Word))
 		}
