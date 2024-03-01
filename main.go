@@ -150,7 +150,7 @@ func (game *Game) gameLoop() {
 		if len(game.Hints) > 0 {
 			fmt.Printf("A palavra a ser testada tem %d letras, digite 1 para dicas (%d restantes) ou digite a palavra a ser testada: ", len(game.Word), len(game.Hints))
 		} else if game.Chances != -1 {
-			fmt.Printf("A palavra a ser testada tem %d letras,você tem %d chances: ", len(game.Word), game.Chances-len(game.Histories))
+			fmt.Printf("A palavra a ser testada tem %d letras, você tem %d chances: ", len(game.Word), game.Chances-len(game.Histories))
 		} else {
 			fmt.Printf("A palavra a ser testada tem %d letras: ", len(game.Word))
 		}
@@ -188,7 +188,11 @@ func (game *Game) gameLoop() {
 		correct, invalidWord, choicesOver := game.tryWord(word)
 		if correct {
 			game.printScreen()
-			fmt.Printf("PARABENS!!! Você acertou a palavra, ainda restaram %d tentativas!", game.Chances-len(game.Histories))
+			if game.Chances == -1 {
+				fmt.Println("PARABENS!!! Você acertou a palavra!")
+			} else {
+				fmt.Printf("PARABENS!!! Você acertou a palavra, ainda restaram %d tentativas!", game.Chances-len(game.Histories))
+			}
 			break
 		}
 
