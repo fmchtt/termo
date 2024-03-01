@@ -11,12 +11,9 @@ import (
 	"os"
 	"slices"
 	"strings"
-	"unicode"
 
 	"github.com/fatih/color"
-	"golang.org/x/text/runes"
-	"golang.org/x/text/transform"
-	"golang.org/x/text/unicode/norm"
+	unidecode "github.com/mozillazg/go-unidecode"
 )
 
 type History struct {
@@ -37,18 +34,16 @@ type Game struct {
 }
 
 func (game *Game) readLines(r io.Reader, numberOfCharacters int) {
-	normalize := transform.Chain(norm.NFD, runes.Remove(runes.In(unicode.Mn)), norm.NFC)
-	words := make([]string, 0)
+	words := []string{}
 	sc := bufio.NewScanner(r)
 	index := 0
 	for sc.Scan() {
 		word := sc.Text()
+		word = strings.Trim(word, "\n \r")
 		if len(word) == numberOfCharacters {
-			output, _, e := transform.String(normalize, sc.Text())
-			if e != nil {
-				panic(e)
-			}
-			words = append(words, strings.ToLower(output))
+			decodedWord := unidecode.Unidecode(word)
+			loweredWord := strings.ToLower(decodedWord)
+			words = append(words, loweredWord)
 		}
 		index++
 	}
@@ -61,9 +56,13 @@ func (game *Game) getWord() {
 }
 
 func (game *Game) Init(numberOfCharacters int, numberOfChances int) {
-	data, openErr := os.Open("./words.txt")
-	if openErr != nil {
-		log.Fatalln("Erro ao ler arquivo de palavras")
+	data, fileErr := os.Open("parsedWords.txt")
+	if fileErr != nil {
+		if _, ok := fileErr.(*os.PathError); ok {
+			data = parseFile()
+		} else {
+			log.Fatalln("Erro ao ler arquivo de palavras")
+		}
 	}
 	game.readLines(data, numberOfCharacters)
 	game.getWord()
@@ -71,8 +70,8 @@ func (game *Game) Init(numberOfCharacters int, numberOfChances int) {
 }
 
 func (game *Game) tryWord(word string) (bool, bool, bool) {
-	index := slices.IndexFunc(game.ValidWordList, func(text string) bool { return strings.Compare(text, word) == 0 })
-	if index == -1 {
+	validWord := slices.Contains(game.ValidWordList, word)
+	if !validWord {
 		return false, true, false
 	}
 
@@ -160,6 +159,7 @@ func (game *Game) gameLoop() {
 			fmt.Println("Erro ao fazer leitura, tente novamente")
 		}
 		word = strings.Trim(word, "\n \r")
+		word = strings.ToLower(word)
 
 		if strings.Compare(word, "1") == 0 {
 			game.printScreen()
@@ -206,6 +206,36 @@ func (game *Game) gameLoop() {
 
 		game.printScreen()
 	}
+}
+
+func parseFile() *os.File {
+	data, openErr := os.Open("./words.txt")
+	if openErr != nil {
+		log.Fatalln("Erro ao ler arquivo de palavras")
+	}
+
+	words := []string{}
+	sc := bufio.NewScanner(data)
+	index := 0
+	for sc.Scan() {
+		word := sc.Text()
+		word = strings.Trim(word, "\n \r")
+		word = unidecode.Unidecode(word)
+		word = strings.ToLower(word)
+		words = append(words, word)
+		index++
+	}
+
+	newFile, fileErr := os.Create("parsedWords.txt")
+	if fileErr != nil {
+		log.Fatalln("Erro ao ler arquivo de palavras")
+	}
+
+	for _, word := range words {
+		newFile.WriteString(word + "\n")
+	}
+	newFile.Seek(0, 0)
+	return newFile
 }
 
 func main() {

@@ -4,7 +4,7 @@ go 1.21.6
 
 require (
 	github.com/fatih/color v1.16.0
-	golang.org/x/text v0.14.0
+	github.com/mozillazg/go-unidecode v0.2.0
 )
 
 require (
