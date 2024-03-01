@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"log"
 	"math"
 	"math/rand"
 	"os"
@@ -62,7 +63,7 @@ func (game *Game) getWord() {
 func (game *Game) Init(numberOfCharacters int, numberOfChances int) {
 	data, openErr := os.Open("./words.txt")
 	if openErr != nil {
-		fmt.Println("Erro ao ler arquivo de palavras")
+		log.Fatalln("Erro ao ler arquivo de palavras")
 	}
 	game.readLines(data, numberOfCharacters)
 	game.getWord()
